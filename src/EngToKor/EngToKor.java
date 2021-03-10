@@ -5,7 +5,7 @@ import java.util.*;
 
 public class EngToKor {
     public static void main(String[] args) {
-        EngToKorAct("dks sudgktpdy");
+        EngToKorAct("dkssudgktpdy");
 
     }
 
@@ -25,9 +25,8 @@ public class EngToKor {
         StringBuilder SB = new StringBuilder();
         outerloop:
         for (int i = 0; i < input.length(); i++) { //영문자에 해당하는 초성찾기
-            if (input.substring(i, i + 1).equals(" ")) { //현재 i의 위치가 공백에 해당할경우 SB에 공백을 추가해주고 continue
-                SB.append(" ");
-                continue;
+            if (input.substring(i, i + 1).equals(" ")) { // 현재 i의 위치가 공백일 경우 for문의 마지막에서 띄어쓰기 추가
+                check = true;
             }
             if (choNum == -1) { //초성이 찾아진 상태인지 여부를 확인함, 한글 한글자가 완성되면 -1로 초기화
                 chr = input.substring(i, i + 1); // input 변수에서 i번째에 해당하는 첫번째 문자 추출
@@ -75,52 +74,54 @@ public class EngToKor {
                         }
                     }
                 }
-            }
-            int result = min - i;
+                int result = min - i;
 
-            if (result == 3 && input.substring(i+1, i + 2).equals(" ")) { // 중성 위치를 체크할때 공백까지 포함되는 경우가 있으므로 자음의 길이가 3이면서 다음 문자열이 공백인경우 값 보정
-                result -= 1;
-            }
-            switch (result) { //현재 i번째 문자를 기준으로 다음 중성까지의 크기
-                case 0: // 문자열의 마지막 문자가 중성으로 끝날경우 min값이 마지막 i 값과 같아지므로 종성이 없는 case 1과 똑같이 다루기 위함
-                case 1: // 다음 중성까지 자음인 문자가 1개라는 뜻으로 음이라는 의미로 다음 for문에서 쓰일 초성에 해당
-                    jongNum = 0; // 종성이 존재하지 않으므로 공백에 해당하는 인덱스
-                    SB.append((char) ((choNum * 21 + joongNum) * 28 + 0xAC00)); //초성, 중성, 종성값에 해당하는 유니코드로 변환하기 위한 계산
-                    choNum = -1; // 다음 for문을 위해 초기화
-                    joongNum = -1;
-                    jongNum = -1;
-                    if (i != input.length() - 1)
-                        i -= 1; // 종성이 공백일경우 현재 i는 다음 초성이라는 의미로 초성,중성,종성값의 초기화후 현재의 i값으로 다시 for문을 진행할 수 있도록 i에 1빼주기, if는 문자열의 마지막에서 무한루프를 방지하기 위함
-                    break;
-                case 2:
-                    chr = input.substring(i, i + 1); // 다음 중성까지 자음인 문자가 2개라는 뜻으로 종성과 다음 for문에서 쓰일 초성에 해당
-                    for (int j = 0; j < jongEng.length; j++) { // 현재 i에 해당하는 문자열의 문자를 종성배열에서 찾기
-                        if (chr.equals(jongEng[j])) {
-                            jongNum = j;
-                            break;
+                if (result == 3 && input.substring(i + 1, i + 2).equals(" ")) { // 중성 위치를 체크할때 공백까지 포함되는 경우가 있으므로 자음의 길이가 3이면서 다음 문자열이 공백인경우 값 보정
+                    result -= 1;
+                } else if (input.substring(i, i + 1).equals(" ")) result = 0; // 현재 i의 위치가 공백일때 앞 글자가 종성이 없는 글자일경우 보정
+                switch (result) { //현재 i번째 문자를 기준으로 다음 중성까지의 크기
+                    case 0: // 문자열의 마지막 문자가 중성으로 끝날경우 min값이 마지막 i 값과 같아지므로 종성이 없는 case 1과 똑같이 다루기 위함
+                    case 1: // 다음 중성까지 자음인 문자가 1개라는 뜻으로 음이라는 의미로 다음 for문에서 쓰일 초성에 해당
+                        SB.append((char) ((choNum * 21 + joongNum) * 28 + 0xAC00)); //초성, 중성, 종성값에 해당하는 유니코드로 변환하기 위한 계산
+                        choNum = -1; // 다음 for문을 위해 초기화
+                        joongNum = -1;
+                        jongNum = -1;
+                        if (i != input.length() - 1)
+                            i -= 1; // 종성이 공백일경우 현재 i는 다음 초성이라는 의미로 초성,중성,종성값의 초기화후 현재의 i값으로 다시 for문을 진행할 수 있도록 i에 1빼주기, if는 문자열의 마지막에서 무한루프를 방지하기 위함
+                        break;
+                    case 2:
+                        chr = input.substring(i, i + 1); // 다음 중성까지 자음인 문자가 2개라는 뜻으로 종성과 다음 for문에서 쓰일 초성에 해당
+                        for (int j = 0; j < jongEng.length; j++) { // 현재 i에 해당하는 문자열의 문자를 종성배열에서 찾기
+                            if (chr.equals(jongEng[j])) {
+                                jongNum = j;
+                                break;
+                            }
                         }
-                    }
-                    SB.append((char) ((choNum * 21 + joongNum) * 28 + jongNum + 0xAC00));
-                    choNum = -1;
-                    joongNum = -1;
-                    jongNum = -1;
-                    break;
-                case 3:
-                    chr = input.substring(i, i + 2); // 다음 중성까지 자음인 문자가 3개라는 뜻으로 종성은 받침이 2개인 문자와 다음 for문에서 쓰일 초성에 해당
-                    for (int j = 0; j < jongEng.length; j++) { // 현재 i에 해당하는 문자열의 문자를 종성배열에서 찾기
-                        if (chr.equals(jongEng[j])) {
-                            jongNum = j;
-                            break;
+                        SB.append((char) ((choNum * 21 + joongNum) * 28 + jongNum + 0xAC00));
+                        choNum = -1;
+                        joongNum = -1;
+                        jongNum = -1;
+                        break;
+                    case 3:
+                        chr = input.substring(i, i + 2); // 다음 중성까지 자음인 문자가 3개라는 뜻으로 종성은 받침이 2개인 문자와 다음 for문에서 쓰일 초성에 해당
+                        for (int j = 0; j < jongEng.length; j++) { // 현재 i에 해당하는 문자열의 문자를 종성배열에서 찾기
+                            if (chr.equals(jongEng[j])) {
+                                jongNum = j;
+                                break;
+                            }
                         }
-                    }
-                    SB.append((char) ((choNum * 21 + joongNum) * 28 + jongNum + 0xAC00));
-                    choNum = -1;
-                    joongNum = -1;
-                    jongNum = -1;
-                    i += 1;
-                    break;
+                        SB.append((char) ((choNum * 21 + joongNum) * 28 + jongNum + 0xAC00));
+                        choNum = -1;
+                        joongNum = -1;
+                        jongNum = -1;
+                        i += 1;
+                        break;
+                }
             }
-
+            if (check){ // 햔재 i의 위치가 공백일때 띄어쓰기 추가
+                SB.append(" ");
+                check=false;
+            }
         }
         System.out.println(SB);
     }
