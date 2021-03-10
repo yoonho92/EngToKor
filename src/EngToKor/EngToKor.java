@@ -5,26 +5,30 @@ import java.util.*;
 
 public class EngToKor {
     public static void main(String[] args) {
-        EngToKorAct("dkssudgktpdy");
+        EngToKorAct("dks sudgktpdy");
 
     }
 
     private static void EngToKorAct(String input) {
-        String[] choEng = {"r","R","s","e","E","f","a","q","Q","t","T","d","w","W","c","z","x","v","g"};
-        String[] joongEng = {"k","o","i","O","j","p","u","P","h","hk","ho","hl","y","n","nj","np","nl","b","m","ml","l"};
-        String[] jongEng = {"","r","R","rt","s","sw","sg","e","f","fr","fa","fq","ft","fx","fv","fg","a","q","qt","t","T","d","w","c","z","x","v","g"};
-
+        String[] choEng = {"r", "R", "s", "e", "E", "f", "a", "q", "Q", "t", "T", "d", "w", "W", "c", "z", "x", "v", "g"};
+        String[] joongEng = {"k", "o", "i", "O", "j", "p", "u", "P", "h", "hk", "ho", "hl", "y", "n", "nj", "np", "nl", "b", "m", "ml", "l"};
+        String[] jongEng = {"", "r", "R", "rt", "s", "sw", "sg", "e", "f", "fr", "fa", "fq", "ft", "fx", "fv", "fg", "a", "q", "qt", "t", "T", "d", "w", "c", "z", "x", "v", "g"};
 
 
         int choNum = -1;
         int joongNum = -1;
         int jongNum = -1;
         int min = 0;
+        Boolean check = false;
         ArrayList<Integer> Temp = new ArrayList<>();
         String chr;
         StringBuilder SB = new StringBuilder();
         outerloop:
         for (int i = 0; i < input.length(); i++) { //영문자에 해당하는 초성찾기
+            if (input.substring(i, i + 1).equals(" ")) { //현재 i의 위치가 공백에 해당할경우 SB에 공백을 추가해주고 continue
+                SB.append(" ");
+                continue;
+            }
             if (choNum == -1) { //초성이 찾아진 상태인지 여부를 확인함, 한글 한글자가 완성되면 -1로 초기화
                 chr = input.substring(i, i + 1); // input 변수에서 i번째에 해당하는 첫번째 문자 추출
                 for (int j = 0; j < choEng.length; j++) {
@@ -72,7 +76,12 @@ public class EngToKor {
                     }
                 }
             }
-            switch (min - i) { //현재 i번째 문자를 기준으로 다음 중성까지의 크기
+            int result = min - i;
+
+            if (result == 3 && input.substring(i+1, i + 2).equals(" ")) { // 중성 위치를 체크할때 공백까지 포함되는 경우가 있으므로 자음의 길이가 3이면서 다음 문자열이 공백인경우 값 보정
+                result -= 1;
+            }
+            switch (result) { //현재 i번째 문자를 기준으로 다음 중성까지의 크기
                 case 0: // 문자열의 마지막 문자가 중성으로 끝날경우 min값이 마지막 i 값과 같아지므로 종성이 없는 case 1과 똑같이 다루기 위함
                 case 1: // 다음 중성까지 자음인 문자가 1개라는 뜻으로 음이라는 의미로 다음 for문에서 쓰일 초성에 해당
                     jongNum = 0; // 종성이 존재하지 않으므로 공백에 해당하는 인덱스
@@ -80,7 +89,8 @@ public class EngToKor {
                     choNum = -1; // 다음 for문을 위해 초기화
                     joongNum = -1;
                     jongNum = -1;
-                    if (i != input.length() - 1) i -= 1; // 종성이 공백일경우 현재 i는 다음 초성이라는 의미로 초성,중성,종성값의 초기화후 현재의 i값으로 다시 for문을 진행할 수 있도록 i에 1빼주기, if는 문자열의 마지막에서 무한루프를 방지하기 위함
+                    if (i != input.length() - 1)
+                        i -= 1; // 종성이 공백일경우 현재 i는 다음 초성이라는 의미로 초성,중성,종성값의 초기화후 현재의 i값으로 다시 for문을 진행할 수 있도록 i에 1빼주기, if는 문자열의 마지막에서 무한루프를 방지하기 위함
                     break;
                 case 2:
                     chr = input.substring(i, i + 1); // 다음 중성까지 자음인 문자가 2개라는 뜻으로 종성과 다음 for문에서 쓰일 초성에 해당
