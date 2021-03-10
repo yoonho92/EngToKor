@@ -5,7 +5,7 @@ import java.util.*;
 
 public class EngToKor {
     public static void main(String[] args) {
-        EngToKorAct("dkssudgktpdy");
+        EngToKorAct("rk sk");
 
     }
 
@@ -20,6 +20,7 @@ public class EngToKor {
         int jongNum = -1;
         int min = 0;
         Boolean check = false;
+        boolean space = false;
         ArrayList<Integer> Temp = new ArrayList<>();
         String chr;
         StringBuilder SB = new StringBuilder();
@@ -86,7 +87,7 @@ public class EngToKor {
                         choNum = -1; // 다음 for문을 위해 초기화
                         joongNum = -1;
                         jongNum = -1;
-                        if (i != input.length() - 1)
+                        if (i != input.length() - 1 && !input.substring(i, i + 1).equals(" "))
                             i -= 1; // 종성이 공백일경우 현재 i는 다음 초성이라는 의미로 초성,중성,종성값의 초기화후 현재의 i값으로 다시 for문을 진행할 수 있도록 i에 1빼주기, if는 문자열의 마지막에서 무한루프를 방지하기 위함
                         break;
                     case 2:
