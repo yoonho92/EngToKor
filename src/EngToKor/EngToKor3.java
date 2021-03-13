@@ -2,6 +2,7 @@ package EngToKor;
 
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.Locale;
 import java.util.Queue;
 
 public class EngToKor3 {
@@ -11,7 +12,7 @@ public class EngToKor3 {
     //호환형한글자모 자음 0x3131 모음 0x314F
 
     public static void main(String[] args) {
-        String input = "dkssudgktpdy!";
+        String input = "rnt";
         EngToKor(input);
     }
 
@@ -29,11 +30,16 @@ public class EngToKor3 {
         int joongNum2 = 0;
         int jongNum1 = 0;
         int jongNum2 = 0;
+
+
+        System.out.println(input);
         for (int i = 0; i <= input.length(); i++) {
+
             if (i != input.length()) {
                 nowChr = input.substring(i, i + 1);
                 if (!((nowChr.codePointAt(0) >= 65 && nowChr.codePointAt(0) <= 90)
-                        || (nowChr.codePointAt(0) >= 97 && nowChr.codePointAt(0) <= 122))) check = true; //영문자 이외의 문자가 올 때
+                        || (nowChr.codePointAt(0) >= 97 && nowChr.codePointAt(0) <= 122)))
+                    check = true; //영문자 이외의 문자가 올 때
                 for (int choI = 0; choI < choEng.length; choI++) { //초성찾아서 큐에 넣고 state에 J추가
                     if (choEng[choI].equals(nowChr)) {
                         queue.add(choI);
@@ -79,7 +85,7 @@ public class EngToKor3 {
                     if (check || i == input.length()) {
                         choNum = queue.poll();
                         joongNum1 = queue.poll();
-                        state.delete(0,2);
+                        state.delete(0, 2);
                         output.append((char) ((choNum * 21 + joongNum1) * 28 + 0xAC00));
                     }
                     break;
@@ -94,7 +100,7 @@ public class EngToKor3 {
                         for (int joongCheck = 0; joongCheck < joongEng.length; joongCheck++) {
                             if (joongEng[joongCheck].equals(joongEng[joongNum1] + joongEng[joongNum2])) {
                                 queue.clear();
-                                state.delete(0,3);
+                                state.delete(0, 3);
                                 output.append((char) ((choNum * 21 + joongCheck) * 28 + 0xAC00));
                                 break;
                             }
@@ -122,20 +128,31 @@ public class EngToKor3 {
                     state.delete(0, 1);
                     break;
 
-                case "JMJ": // 특수문자나 i가 마지막 인덱스일 때 출력
+                case "JMJ": // 특수문자나 i가 마지막 인덱스일 때 출력, 마지막 J가 종성배열에 없는 문자일때 JM 출력
+                    choNum = queue.poll();
+                    joongNum1 = queue.poll();
+                    jongNum1 = queue.poll();
+                    queue.add(choNum);
+                    queue.add(joongNum1);
+                    queue.add(jongNum1);
                     if (check || i == input.length()) {
-                        choNum = queue.poll();
-                        joongNum1 = queue.poll();
-                        jongNum1 = queue.poll();
-                        state.delete(0,3);
+                        state.delete(0, 3);
                         for (int jongCheck = 0; jongCheck < jongEng.length; jongCheck++) {
                             if (jongEng[jongCheck].equals(choEng[jongNum1])) {
-                                state.delete(0,3);
+                                state.delete(0, 3);
+                                queue.clear();
                                 output.append((char) ((choNum * 21 + joongNum1) * 28 + jongCheck + 0xAC00));
                                 break;
                             }
                         }
-
+                    }
+                    int finalJongNum4 = jongNum1;
+                    if (Arrays.stream(jongEng).noneMatch(n -> n.equals(choEng[finalJongNum4]))) {
+                        queue.poll();
+                        queue.poll();
+                        state.delete(0, 2);
+                        output.append((char) ((choNum * 21 + joongNum1) * 28 + 0xAC00));
+                        break;
                     }
 
                     break;
@@ -161,7 +178,7 @@ public class EngToKor3 {
                             if (jongEng[jongCheck].equals(choEng[jongNum1] + choEng[jongNum2])) {
                                 output.append((char) ((choNum * 21 + joongNum1) * 28 + jongCheck + 0xAC00));
                                 queue.clear();
-                                state.delete(0,4);
+                                state.delete(0, 4);
                                 break;
                             }
                         }
@@ -218,7 +235,7 @@ public class EngToKor3 {
                         jongNum1 = queue.poll();
                         for (int joongCheck = 0; joongCheck < joongEng.length; joongCheck++) {
                             if (joongEng[joongCheck].equals(joongEng[joongNum1] + joongEng[joongNum2])) {
-                                state.delete(0,4);
+                                state.delete(0, 4);
                                 output.append((char) ((choNum * 21 + joongCheck) * 28 + jongNum1 + 0xAC00));
                             }
                         }
@@ -260,7 +277,7 @@ public class EngToKor3 {
                         for (int jongCheck = 0; jongCheck < jongEng.length; jongCheck++) {
                             if (jongEng[jongCheck].equals(jongEng[jongNum1] + jongEng[jongNum2])) {
                                 queue.clear();
-                                state.delete(0,5);
+                                state.delete(0, 5);
                                 output.append((char) ((choNum * 21 + joongNum) * 28 + jongCheck + 0xAC00));
                                 break;
                             }
@@ -320,10 +337,11 @@ public class EngToKor3 {
                     System.out.println(state);
 
             }
-            if(check){
+            if (check) {
                 output.append(nowChr);
-                check =false;
+                check = false;
             }
+
             choNum = 0; //다음 계산을 위해 초기화
             joongNum1 = 0;
             joongNum2 = 0;
