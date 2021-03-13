@@ -11,7 +11,7 @@ public class EngToKor3 {
     //호환형한글자모 자음 0x3131 모음 0x314F
 
     public static void main(String[] args) {
-        String input = "dkssudgktpdy";
+        String input = "dkssudgktpdy!";
         EngToKor(input);
     }
 
@@ -23,7 +23,7 @@ public class EngToKor3 {
         StringBuilder output = new StringBuilder();
         Queue<Integer> queue = new LinkedList<>();
         boolean check = false;
-        String nowChr;
+        String nowChr = "";
         int choNum = 0;
         int joongNum1 = 0;
         int joongNum2 = 0;
@@ -32,7 +32,8 @@ public class EngToKor3 {
         for (int i = 0; i <= input.length(); i++) {
             if (i != input.length()) {
                 nowChr = input.substring(i, i + 1);
-                if(nowChr.equals(" ")) check = true; //띄어쓰기시 true
+                if (!((nowChr.codePointAt(0) >= 65 && nowChr.codePointAt(0) <= 90)
+                        || (nowChr.codePointAt(0) >= 97 && nowChr.codePointAt(0) <= 122))) check = true; //영문자 이외의 문자가 올 때
                 for (int choI = 0; choI < choEng.length; choI++) { //초성찾아서 큐에 넣고 state에 J추가
                     if (choEng[choI].equals(nowChr)) {
                         queue.add(choI);
@@ -121,7 +122,7 @@ public class EngToKor3 {
                     state.delete(0, 1);
                     break;
 
-                case "JMJ": // 띄어쓰기나 i가 마지막 인덱스일 때 출력
+                case "JMJ": // 특수문자나 i가 마지막 인덱스일 때 출력
                     if (check || i == input.length()) {
                         choNum = queue.poll();
                         joongNum1 = queue.poll();
@@ -145,7 +146,7 @@ public class EngToKor3 {
                     state.delete(0, 2);
                     break;
 
-                case "JMJJ": // 띄어쓰기나 i가 마지막 인덱스일 때 출력 혹은 JJ가 종배열에 존재하지 않을 경우 JMJ로 문자가 완성되므로 출력
+                case "JMJJ": // 특수문자나 i가 마지막 인덱스일 때 출력 혹은 JJ가 종배열에 존재하지 않을 경우 JMJ로 문자가 완성되므로 출력
                     choNum = queue.poll();
                     joongNum1 = queue.poll();
                     jongNum1 = queue.poll();
@@ -208,7 +209,8 @@ public class EngToKor3 {
                         }
                     }
                     break;
-                case "JMMJ": // 띄어쓰기나 i가 마지막 인덱스일때 문자 출력
+                case "JMMJ": // 특수문자
+                    // 특수문자나 i가 마지막 인덱스일때 문자 출력
                     if (check || i == input.length()) {
                         choNum = queue.poll();
                         joongNum1 = queue.poll();
@@ -319,7 +321,7 @@ public class EngToKor3 {
 
             }
             if(check){
-                output.append(" ");
+                output.append(nowChr);
                 check =false;
             }
             choNum = 0; //다음 계산을 위해 초기화
