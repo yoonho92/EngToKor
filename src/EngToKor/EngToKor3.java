@@ -33,18 +33,6 @@ public class EngToKor3 {
         int jongNum2 = 0;
         int jongNum = 0;
 
-        String beforeTemp;
-        String[] upperElement = {"q","w","e","r","t"}; // 통과 시킬 초성문자열
-        for (int n = 0; n < input.length(); n++) {
-            nowChr = input.substring(n, n + 1);
-            String finalNowChr = nowChr;
-            if (n > 0 &&  Arrays.stream(upperElement).anyMatch(m -> m.equals(finalNowChr))) { //n이 0이상이면서 upperElement의 요소와 일치하는지 확인
-                beforeTemp = input.substring(n - 1, n);
-                if (beforeTemp.equals(nowChr)) {  //연속된 문자열이 나온다면 대체
-                    input = input.replace(nowChr + nowChr, nowChr.toUpperCase());
-                }
-            }
-        }
         for (int i = 0; i <= input.length(); i++) {
 
             if (i != input.length()) {
