@@ -327,7 +327,7 @@ public class EngToKor4 {
                     }
                     break;
 
-                case "JMMJJJ": //마지막에 J가 오므로 JMMJJ로 문자 출력
+                case "JMMJJJ": // 마지막에 자음이 왔으므로 직전에 왔던 J는 초성으로 쓰일 수 없기 때문에 JMMJJ으로 문자를 완성
                     choNum = queue.poll();
                     joongNum1 = queue.poll();
                     joongNum2 = queue.poll();
@@ -349,7 +349,7 @@ public class EngToKor4 {
                     }
                     break;
 
-                case "JMMJJM": //마지막에 M이 오므로 JMMJ로 문자 출력
+                case "JMMJJM": //마지막에 모음이 왔으므로 직전에 왔던 J는 초성으로 쓰이기 때문에 JMMJ으로 문자를 완성
                     choNum = queue.poll();
                     joongNum1 = queue.poll();
                     joongNum2 = queue.poll();
