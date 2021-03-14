@@ -81,19 +81,19 @@ public class EngToKor4 {
             //        J M M J J (M
 
             switch (state.toString()) { // state에 추가된 문자열에 따라 동작
-                case "J": //마지막문자열에서 자음으로 끝날때
-                    if (check || i == input.length()) { //유효한 다음 문자열이 없을 때 문자열을 완성
+                case "J": //특수문자나 인덱스 i가 마지막일 때 문자를 완성
+                    if (check || i == input.length()) {
                         choNum = queue.poll();
                         output.append((char) (choNum + 0x1100));
                         state.delete(0, 1);
                     }
                     break;
-                case "M": //모음만 단독으로 나올 때
+                case "M": //모음만 단독으로 나올 때 문자를 완성
                     joongNum1 = queue.poll();
                     output.append((char) (joongNum1 + 0x1161));
                     state.delete(0, 1);
                     break;
-                case "JM": // 초성 + 중성으로 문자열이 끝날 때
+                case "JM": // 특수문자나 인덱스 i가 마지막일 때 문자를 완성
                     if (check || i == input.length()) {
                         choNum = queue.poll();
                         joongNum1 = queue.poll();
@@ -101,46 +101,44 @@ public class EngToKor4 {
                         output.append((char) ((choNum * 21 + joongNum1) * 28 + 0xAC00));
                     }
                     break;
-                case "JMM": // 초성 + 중성 + 중성, MM이 joongEng에 없으면 JM 출력, i가 마지막 인덱스일때 JMM출력(중성모음에 포함되지 않은 MM은 미리 걸러짐)
+                case "JMM": // 특수문자나 인덱스 i가 마지막일 때 문자를 완성하거나 JM과 M으로 문자가 완성되는 경우를 가정
                     choNum = queue.poll();
                     joongNum1 = queue.poll();
                     joongNum2 = queue.poll();
-                    queue.add(choNum);
-                    queue.add(joongNum1);
-                    queue.add(joongNum2);
-                    if (check || i == input.length()) { // i가 마지막 인덱스일 때
+                    if (check || i == input.length()) {
                         for (int joongCheck = 0; joongCheck < joongEng.length; joongCheck++) {
                             if (joongEng[joongCheck].equals(joongEng[joongNum1] + joongEng[joongNum2])) {
+                                joongNum = joongCheck;
                                 queue.clear();
                                 state.delete(0, 3);
-                                output.append((char) ((choNum * 21 + joongCheck) * 28 + 0xAC00));
+                                output.append((char) ((choNum * 21 + joongNum) * 28 + 0xAC00));
                                 break;
                             }
                         }
                     }
-
+                    queue.add(choNum);
+                    queue.add(joongNum1);
+                    queue.add(joongNum2);
                     int finalJoongNum = joongNum1;
                     int finalJoongNum1 = joongNum2;
+                    //MM이 중성 배열에 존재하지 않아 JM과 M으로 각 글자가 완성되는 경우, 중성배열에 존재할 경우 다음에 오는 문자에 따라 JMM JMMJ JMMJJ 로 문자가 완성되므로 다음 인덱스의 switch에 맡기기
                     if (Arrays.stream(joongEng).noneMatch(n -> n.equals(joongEng[finalJoongNum] + joongEng[finalJoongNum1]))) { //MM이 중성모음에 없으면 JM출력
                         output.append((char) ((choNum * 21 + joongNum1) * 28 + 0xAC00));
                         queue.poll();
                         queue.poll();
-                        output.append((char) (queue.poll() + 0x1161));
+                        joongNum = queue.poll();
+                        output.append((char) (joongNum + 0x1161));
                         state.delete(0, 3);
                     }
                     break;
 
-                case "JJ": //자음이 연속으로 나올때 가능성이 사라진 앞의 J는 출력
-                    output.append((char) (queue.poll() + 0x1100));
+                case "JJ": // 마지막에 자음이 왔으므로 직전에 왔던 J는 문자를 완성
+                    choNum = queue.poll();
+                    output.append((char) (choNum + 0x1100));
                     state.delete(0, 1);
                     break;
 
-                case "MJ":
-                    output.append((char) (queue.poll() + 0x1161));
-                    state.delete(0, 1);
-                    break;
-
-                case "JMJ": // 특수문자나 i가 마지막 인덱스일 때 출력, 마지막 J가 종성배열에 없는 문자일때 JM 출력
+                case "JMJ": // 특수문자나 인덱스 i가 마지막일 때 문자를 완성하거나 JM로 문자가 완성되는 경우를 가정
                     choNum = queue.poll();
                     joongNum1 = queue.poll();
                     jongNum1 = queue.poll();
@@ -159,6 +157,7 @@ public class EngToKor4 {
                         }
                     }
                     int finalJongNum4 = jongNum1;
+                    //J가 종성 배열에 존재하지 않아 JM로 글자가 완성되는 경우, 종성배열에 존재할 경우 다음에 오는 문자에 따라 JM JMJ JMJJ 로 문자가 완성되므로 다음 인덱스의 switch에 맡기기
                     if (Arrays.stream(jongEng).noneMatch(n -> n.equals(choEng[finalJongNum4]))) {
                         queue.poll();
                         queue.poll();
@@ -168,14 +167,14 @@ public class EngToKor4 {
                     }
 
                     break;
-                case "JMJM": //마지막에 모음이 올때 종의 가능성이 사라지므로 JM 출력
+                case "JMJM": // 마지막에 모음이 왔으므로 직전에 왔던 J는 종성으로 쓰일 수 없기 때문에 JM으로 문자를 완성
                     choNum = queue.poll();
                     joongNum1 = queue.poll();
                     output.append((char) ((choNum * 21 + joongNum1) * 28 + 0xAC00));
                     state.delete(0, 2);
                     break;
 
-                case "JMJJ": // 특수문자나 i가 마지막 인덱스일 때 출력 혹은 JJ가 종배열에 존재하지 않을 경우 JMJ로 문자가 완성되므로 출력
+                case "JMJJ": // 특수문자나 인덱스 i가 마지막일 때 문자를 완성하거나 JMJ로 문자가 완성되는 경우를 가정
                     choNum = queue.poll();
                     joongNum1 = queue.poll();
                     jongNum1 = queue.poll();
@@ -184,7 +183,8 @@ public class EngToKor4 {
                     if (check || i == input.length()) {
                         for (int jongCheck = 0; jongCheck < jongEng.length; jongCheck++) {
                             if (jongEng[jongCheck].equals(choEng[jongNum1] + choEng[jongNum2])) {
-                                output.append((char) ((choNum * 21 + joongNum1) * 28 + jongCheck + 0xAC00));
+                                jongNum =jongCheck;
+                                output.append((char) ((choNum * 21 + joongNum1) * 28 + jongNum+ 0xAC00));
                                 state.delete(0, 4);
                                 break;
                             }
@@ -197,22 +197,25 @@ public class EngToKor4 {
                     queue.add(jongNum2);
                     int finalJongNum = jongNum1;
                     int finalJongNum1 = jongNum2;
+                    //JJ가 종성 배열에 존재하지 않아 JMJ로 글자가 완성되는 경우, 종성배열에 존재할 경우 다음에 오는 문자에 따라 JMJ JMJJ로 문자가 완성되므로 다음 인덱스의 switch에 맡기도록 하기
                     if (Arrays.stream(jongEng).noneMatch(n -> n.equals(choEng[finalJongNum] + choEng[finalJongNum1]))) {
 
                         for (int jongCheck = 0; jongCheck < jongEng.length; jongCheck++) {
                             if (jongEng[jongCheck].equals(choEng[jongNum1])) {
-                                output.append((char) ((choNum * 21 + joongNum1) * 28 + jongCheck + 0xAC00));
+                                jongNum = jongCheck;
+                                queue.poll();
+                                queue.poll();
+                                queue.poll();
+                                state.delete(0, 3);
+                                output.append((char) ((choNum * 21 + joongNum1) * 28 + jongNum + 0xAC00));
                                 break;
                             }
                         }
-                        queue.poll();
-                        queue.poll();
-                        queue.poll();
-                        state.delete(0, 3);
+
                     }
                     break;
 
-                case "JMJJJ": // 마지막에 J가 오므로 JMJJ로 문자가 완성되므로 출력
+                case "JMJJJ": // 마지막에 자음이 왔으므로 직전에 왔던 J는 종성으로 쓰이므로 때문에 JMJJ으로 문자를 완성
                     choNum = queue.poll();
                     joongNum1 = queue.poll();
                     jongNum1 = queue.poll();
@@ -220,12 +223,13 @@ public class EngToKor4 {
                     state.delete(0, 4);
                     for (int jongCheck = 0; jongCheck < jongEng.length; jongCheck++) {
                         if (jongEng[jongCheck].equals(choEng[jongNum1] + choEng[jongNum2])) {
+                            jongNum = jongCheck;
                             output.append((char) ((choNum * 21 + joongNum1) * 28 + jongCheck + 0xAC00));
                         }
                     }
                     break;
 
-                case "JMJJM": // 마지막에 M이 오므로 JJ중 앞은 종성 뒤는 초성
+                case "JMJJM": // 마지막에 모음이 왔으므로 직전에 왔던 J는 종성으로 쓰일 수 없기 때문에 JMJ으로 문자를 완성
                     choNum = queue.poll();
                     joongNum1 = queue.poll();
                     jongNum1 = queue.poll();
@@ -238,7 +242,7 @@ public class EngToKor4 {
                     }
                     break;
                 case "JMMJ": // 특수문자
-                    // 특수문자나 i가 마지막 인덱스일때 문자 출력
+                    // 특수문자나 인덱스 i가 마지막일 때 문자를 완성
                     if (check || i == input.length()) {
                         choNum = queue.poll();
                         joongNum1 = queue.poll();
@@ -259,19 +263,20 @@ public class EngToKor4 {
                     }
                     break;
 
-                case "JMMJM": // 마지막에 M이 오므로 JMM으로 문자 출력
+                case "JMMJM": // 마지막에 모음이 왔으므로 직전에 왔던 J는 종성으로 쓰일 수 없기 때문에 JMM으로 문자를 완성
                     choNum = queue.poll();
                     joongNum1 = queue.poll();
                     joongNum2 = queue.poll();
                     for (int joongCheck = 0; joongCheck < joongEng.length; joongCheck++) {
                         if (joongEng[joongCheck].equals(joongEng[joongNum1] + joongEng[joongNum2])) {
+                            joongNum = joongCheck;
                             state.delete(0, 3);
-                            output.append((char) ((choNum * 21 + joongCheck) * 28 + 0xAC00));
+                            output.append((char) ((choNum * 21 + joongNum) * 28 + 0xAC00));
                         }
                     }
                     break;
 
-                case "JMMJJ": // JMMJJ에서 JJ가 종성배열에 포함되지 않을 경우 JMMJ 출력
+                case "JMMJJ": // 특수문자나 인덱스 i가 마지막일 때 문자를 완성하거나 JMMJ로 문자가 완성되는 경우를 가정
                     choNum = queue.poll();
                     joongNum1 = queue.poll();
                     joongNum2 = queue.poll();
@@ -286,8 +291,9 @@ public class EngToKor4 {
                         }
                         for (int jongCheck = 0; jongCheck < jongEng.length; jongCheck++) {
                             if (jongEng[jongCheck].equals(choEng[jongNum1] + choEng[jongNum2])) {
+                                jongNum = jongCheck;
                                 state.delete(0, 5);
-                                output.append((char) ((choNum * 21 + joongNum) * 28 + jongCheck + 0xAC00));
+                                output.append((char) ((choNum * 21 + joongNum) * 28 + jongNum + 0xAC00));
                                 break;
                             }
                         }
@@ -300,6 +306,7 @@ public class EngToKor4 {
                     queue.add(jongNum2);
                     int finalJongNum2 = jongNum1;
                     int finalJongNum3 = jongNum2;
+                    //JJ가 종성 배열에 존재하지 않아 JMMJ로 글자가 완성되는 경우, 종성배열에 존재할 경우 다음에 오는 문자에 따라 JMMJ JMMJJ로 문자가 완성되므로 다음 인덱스의 switch에 맡기도록 하기
                     if (Arrays.stream(jongEng).noneMatch(n -> n.equals(choEng[finalJongNum2] + choEng[finalJongNum3]))) {
                         for (int joongCheck = 0; joongCheck < joongEng.length; joongCheck++) {
                             if (joongEng[joongCheck].equals(joongEng[joongNum1] + joongEng[joongNum2])) {
@@ -330,11 +337,14 @@ public class EngToKor4 {
                     for (int joongCheck = 0; joongCheck < joongEng.length; joongCheck++) {
                         if (joongEng[joongCheck].equals(joongEng[joongNum1] + joongEng[joongNum2])) {
                             joongNum = joongCheck;
+                            break;
                         }
                     }
                     for (int jongCheck = 0; jongCheck < jongEng.length; jongCheck++) {
                         if (jongEng[jongCheck].equals(choEng[jongNum1] + choEng[jongNum2])) {
-                            output.append((char) ((choNum * 21 + joongNum) * 28 + jongCheck + 0xAC00));
+                            jongNum = jongCheck;
+                            output.append((char) ((choNum * 21 + joongNum) * 28 + jongNum + 0xAC00));
+                            break;
                         }
                     }
                     break;
@@ -354,6 +364,7 @@ public class EngToKor4 {
                     }
                     for (int jongCheck = 0; jongCheck < jongEng.length; jongCheck++) {
                         if (jongEng[jongCheck].equals(choEng[jongNum1])) {
+                            jongNum = jongCheck;
                             output.append((char) ((choNum * 21 + joongNum) * 28 + jongCheck + 0xAC00));
                             break;
                         }
@@ -372,8 +383,10 @@ public class EngToKor4 {
             choNum = 0; //다음 계산을 위해 초기화
             joongNum1 = 0;
             joongNum2 = 0;
+            joongNum = 0;
             jongNum1 = 0;
             jongNum2 = 0;
+            jongNum = 0;
         }
         System.out.println(output.toString());
     }
