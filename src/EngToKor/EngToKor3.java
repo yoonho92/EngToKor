@@ -12,7 +12,7 @@ public class EngToKor3 {
     //호환형한글자모 자음 0x3131 모음 0x314F
 
     public static void main(String[] args) {
-        String input = "rnt";
+        String input = "dksgm";
         EngToKor(input);
     }
 
@@ -28,11 +28,23 @@ public class EngToKor3 {
         int choNum = 0;
         int joongNum1 = 0;
         int joongNum2 = 0;
+        int joongNum = 0;
         int jongNum1 = 0;
         int jongNum2 = 0;
+        int jongNum = 0;
 
-
-        System.out.println(input);
+        String beforeTemp;
+        String[] upperElement = {"q","w","e","r","t"}; // 통과 시킬 초성문자열
+        for (int n = 0; n < input.length(); n++) {
+            nowChr = input.substring(n, n + 1);
+            String finalNowChr = nowChr;
+            if (n > 0 &&  Arrays.stream(upperElement).anyMatch(m -> m.equals(finalNowChr))) { //n이 0이상이면서 upperElement의 요소와 일치하는지 확인
+                beforeTemp = input.substring(n - 1, n);
+                if (beforeTemp.equals(nowChr)) {  //연속된 문자열이 나온다면 대체
+                    input = input.replace(nowChr + nowChr, nowChr.toUpperCase());
+                }
+            }
+        }
         for (int i = 0; i <= input.length(); i++) {
 
             if (i != input.length()) {
@@ -168,22 +180,21 @@ public class EngToKor3 {
                     joongNum1 = queue.poll();
                     jongNum1 = queue.poll();
                     jongNum2 = queue.poll();
-                    queue.add(choNum);
-                    queue.add(joongNum1);
-                    queue.add(jongNum1);
-                    queue.add(jongNum2);
 
                     if (check || i == input.length()) {
                         for (int jongCheck = 0; jongCheck < jongEng.length; jongCheck++) {
                             if (jongEng[jongCheck].equals(choEng[jongNum1] + choEng[jongNum2])) {
                                 output.append((char) ((choNum * 21 + joongNum1) * 28 + jongCheck + 0xAC00));
-                                queue.clear();
                                 state.delete(0, 4);
                                 break;
                             }
                         }
                     }
 
+                    queue.add(choNum);
+                    queue.add(joongNum1);
+                    queue.add(jongNum1);
+                    queue.add(jongNum2);
                     int finalJongNum = jongNum1;
                     int finalJongNum1 = jongNum2;
                     if (Arrays.stream(jongEng).noneMatch(n -> n.equals(choEng[finalJongNum] + choEng[finalJongNum1]))) {
@@ -235,9 +246,15 @@ public class EngToKor3 {
                         jongNum1 = queue.poll();
                         for (int joongCheck = 0; joongCheck < joongEng.length; joongCheck++) {
                             if (joongEng[joongCheck].equals(joongEng[joongNum1] + joongEng[joongNum2])) {
-                                state.delete(0, 4);
-                                output.append((char) ((choNum * 21 + joongCheck) * 28 + jongNum1 + 0xAC00));
+                                joongNum = joongCheck;
                             }
+                        }
+                        for (int jongCheck = 0; jongCheck < jongEng.length; jongCheck++){
+                            if (jongEng[jongCheck].equals(choEng[jongNum1])) {
+                                state.delete(0, 4);
+                                output.append((char) ((choNum * 21 + joongNum) * 28 + jongCheck + 0xAC00));
+                            }
+
                         }
                     }
                     break;
@@ -260,23 +277,15 @@ public class EngToKor3 {
                     joongNum2 = queue.poll();
                     jongNum1 = queue.poll();
                     jongNum2 = queue.poll();
-                    queue.add(choNum);
-                    queue.add(joongNum1);
-                    queue.add(joongNum2);
-                    queue.add(jongNum1);
-                    queue.add(jongNum2);
-
 
                     if (check || i == input.length()) {
-                        int joongNum = 0;
                         for (int joongCheck = 0; joongCheck < joongEng.length; joongCheck++) {
                             if (joongEng[joongCheck].equals(joongEng[joongNum1] + joongEng[joongNum2])) {
                                 joongNum = joongCheck;
                             }
                         }
                         for (int jongCheck = 0; jongCheck < jongEng.length; jongCheck++) {
-                            if (jongEng[jongCheck].equals(jongEng[jongNum1] + jongEng[jongNum2])) {
-                                queue.clear();
+                            if (jongEng[jongCheck].equals(choEng[jongNum1] + choEng[jongNum2])) {
                                 state.delete(0, 5);
                                 output.append((char) ((choNum * 21 + joongNum) * 28 + jongCheck + 0xAC00));
                                 break;
@@ -284,19 +293,30 @@ public class EngToKor3 {
                         }
                     }
 
+                    queue.add(choNum);
+                    queue.add(joongNum1);
+                    queue.add(joongNum2);
+                    queue.add(jongNum1);
+                    queue.add(jongNum2);
                     int finalJongNum2 = jongNum1;
                     int finalJongNum3 = jongNum2;
-                    if (Arrays.stream(joongEng).noneMatch(n -> n.equals(joongEng[finalJongNum2] + joongEng[finalJongNum3]))) {
+                    if (Arrays.stream(jongEng).noneMatch(n -> n.equals(choEng[finalJongNum2] + choEng[finalJongNum3]))) {
                         for (int joongCheck = 0; joongCheck < joongEng.length; joongCheck++) {
                             if (joongEng[joongCheck].equals(joongEng[joongNum1] + joongEng[joongNum2])) {
-                                output.append((char) ((choNum * 21 + joongCheck) * 28 + jongNum1 + 0xAC00));
+                                joongNum = joongCheck;
                             }
                         }
-                        queue.poll();
-                        queue.poll();
-                        queue.poll();
-                        queue.poll();
-                        state.delete(0, 4);
+                        for (int jongCheck = 0; jongCheck < jongEng.length; jongCheck++) {
+                            if (jongEng[jongCheck].equals(choEng[jongNum1])) {
+                                queue.poll();
+                                queue.poll();
+                                queue.poll();
+                                queue.poll();
+                                state.delete(0, 4);
+                                output.append((char) ((choNum * 21 + joongNum) * 28 + jongCheck + 0xAC00));
+                                break;
+                            }
+                        }
                     }
                     break;
 
@@ -307,14 +327,13 @@ public class EngToKor3 {
                     jongNum1 = queue.poll();
                     jongNum2 = queue.poll();
                     state.delete(0, 5);
-                    int joongNum = 0;
                     for (int joongCheck = 0; joongCheck < joongEng.length; joongCheck++) {
                         if (joongEng[joongCheck].equals(joongEng[joongNum1] + joongEng[joongNum2])) {
                             joongNum = joongCheck;
                         }
                     }
                     for (int jongCheck = 0; jongCheck < jongEng.length; jongCheck++) {
-                        if (jongEng[jongCheck].equals(jongEng[jongNum1] + jongEng[jongNum2])) {
+                        if (jongEng[jongCheck].equals(choEng[jongNum1] + choEng[jongNum2])) {
                             output.append((char) ((choNum * 21 + joongNum) * 28 + jongCheck + 0xAC00));
                         }
                     }
@@ -326,9 +345,17 @@ public class EngToKor3 {
                     joongNum2 = queue.poll();
                     jongNum1 = queue.poll();
                     state.delete(0, 4);
+
                     for (int joongCheck = 0; joongCheck < joongEng.length; joongCheck++) {
-                        if (joongEng[joongCheck].equals(joongEng[joongNum1] + joongEng[joongNum2])) {
-                            output.append((char) (choNum * 21 + joongCheck) * 28 + jongNum1 + 0xAC00);
+                        if (joongEng[joongCheck].equals(joongEng[joongNum1] + joongEng[joongNum2])){
+                            joongNum = joongCheck;
+                            break;
+                        }
+                    }
+                    for (int jongCheck = 0; jongCheck < jongEng.length; jongCheck++) {
+                        if (jongEng[jongCheck].equals(choEng[jongNum1])) {
+                            output.append((char) ((choNum * 21 + joongNum) * 28 + jongCheck + 0xAC00));
+                            break;
                         }
                     }
                     break;
