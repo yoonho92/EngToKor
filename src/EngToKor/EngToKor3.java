@@ -12,7 +12,7 @@ public class EngToKor3 {
     //호환형한글자모 자음 0x3131 모음 0x314F
 
     public static void main(String[] args) {
-        String input = "Rks rkawk";
+        String input = "dmlm";
         EngToKor(input);
     }
 
@@ -117,6 +117,19 @@ public class EngToKor3 {
                         joongNum = queue.poll();
                         output.append((char) (joongNum + 0x1161));
                         state.delete(0, 3);
+                    }
+                    break;
+                case "JMMM": // 마지막에 모음이 왔으므로 직전에 왔던 JMM로 문자를 완성
+                    choNum = queue.poll();
+                    joongNum1 = queue.poll();
+                    joongNum2 = queue.poll();
+                    for (int joongCheck = 0; joongCheck < joongEng.length; joongCheck++) {
+                        if (joongEng[joongCheck].equals(joongEng[joongNum1] + joongEng[joongNum2])) {
+                            joongNum = joongCheck;
+                            state.delete(0, 3);
+                            output.append((char) ((choNum * 21 + joongNum) * 28 + 0xAC00));
+                            break;
+                        }
                     }
                     break;
 
